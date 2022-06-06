@@ -4,26 +4,49 @@ using UnityEngine;
 
 public class Spline : MonoBehaviour
 {
-    public Transform transformPoint;
+    // Game object to see in game
+    public Transform objectToFollowSpline;
 
-    public List<Transform> anchors;
+    // the position the objectToFollowPath is tied to
+    protected Transform transformPoint;
 
-    List<Vector3> pointsBetweenAnchors = new List<Vector3>();
-    List<Vector3> pointsBetweenPoints = new List<Vector3>();
+    // list of the anchor points
+    protected List<Transform> anchors;
 
-    Vector3 TP = new Vector3(0, 0, 0);
+    // lerped points between the anchors positions
+    protected List<Vector3> pointsBetweenAnchors = new List<Vector3>();
+    // lerped points between other points
+    protected List<Vector3> pointsBetweenPoints = new List<Vector3>();
 
-    float t = 0f;
+    // t value
+    private float t = 0f;
 
-    int anchorsSize = 0;
-    int betweenAnchorsSize = 0;
-    int betweenPointsSize = 0;
+    // the amount of anchors
+    private int anchorsSize = 0;
+    // the amount of points between anchors
+    private int betweenAnchorsSize = 0;
+    // the amount of points between other points
+    private int betweenPointsSize = 0;
 
-    // Start is called before the first frame update
+    public void SetFollowObject(Transform a_object)
+    {
+        objectToFollowSpline = a_object;
+    }
+
+    public void SetTransformPoint(Transform a_transformPoint)
+    {
+        transformPoint = a_transformPoint;
+    }
+
+    public void SetAnchors(List<Transform> a_anchors)
+    {
+        anchors = a_anchors;
+    }
+
     void Start()
     {
-        TP = anchors[0].position;
-        transformPoint.position = TP;
+        transformPoint.position = anchors[0].position;
+        objectToFollowSpline.position = transformPoint.position;
 
         anchorsSize = anchors.Count;
 
@@ -38,7 +61,6 @@ public class Spline : MonoBehaviour
         betweenPointsSize = pointsBetweenPoints.Count;
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (Input.GetKey(KeyCode.RightArrow))
@@ -58,9 +80,9 @@ public class Spline : MonoBehaviour
         for (int i = 0; i < betweenPointsSize; i++)
             pointsBetweenPoints[i] = Lerp(pointsBetweenAnchors[i], pointsBetweenAnchors[i + 1], t);
 
-        TP = Lerp(pointsBetweenPoints[betweenPointsSize - 2], pointsBetweenPoints[betweenPointsSize - 1], t);
+        transformPoint.position = Lerp(pointsBetweenPoints[betweenPointsSize - 2], pointsBetweenPoints[betweenPointsSize - 1], t);
 
-        transformPoint.position = TP;
+        objectToFollowSpline.position = transformPoint.position;
     }
 
     Vector3 Lerp(Vector3 a, Vector3 b, float t)
@@ -70,8 +92,20 @@ public class Spline : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        // Draw lines between anchor points
         Gizmos.color = Color.grey;
         Gizmos.DrawLine(anchors[0].position, anchors[1].position);
         Gizmos.DrawLine(anchors[2].position, anchors[3].position);
+
+        // Draw anchor points
+        Gizmos.color = Color.black;
+        Gizmos.DrawSphere(anchors[0].position, 0.25f);
+        Gizmos.DrawSphere(anchors[1].position, 0.25f);
+        Gizmos.DrawSphere(anchors[2].position, 0.25f);
+        Gizmos.DrawSphere(anchors[3].position, 0.25f);
+
+        // Draw Transform point
+        Gizmos.color = Color.white;
+        Gizmos.DrawSphere(transformPoint.position, 0.5f);
     }
 }
